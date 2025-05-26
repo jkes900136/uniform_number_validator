@@ -6,14 +6,9 @@ use std::io;
 /// 1. 各數字從左至右依序乘以特定的權重: 1, 2, 1, 2, 1, 2, 4, 1
 /// 2. 計算每個數字與對應權重的乘積
 /// 3. 對每個乘積，將個位數和十位數相加
-/// 4. 總和能被10整除則為合法的統一編號
+/// 4. 總和能被5整除則為合法的統一編號
 /// 5. 特殊規則：若總和除以10餘7，且最後一位為7，也為合法
-fn is_valid_uniform_number(number: &str) -> bool {
-    // 檢查長度是否為8位數字
-    if number.len() != 8 || !number.chars().all(|c| c.is_ascii_digit()) {
-        return false;
-    }
-    
+fn calculate_sum(number: &str) -> u32 {
     // 權重值 (依據台灣統一編號計算規則)
     let weights = [1, 2, 1, 2, 1, 2, 4, 1];
     
@@ -27,8 +22,21 @@ fn is_valid_uniform_number(number: &str) -> bool {
         sum += product / 10 + product % 10;
     }
     
-    // 標準規則：總和能被10整除則為合法
-    if sum % 10 == 0 {
+    sum
+}
+
+
+
+fn is_valid_uniform_number(number: &str) -> bool {
+    // 檢查長度是否為8位數字
+    if number.len() != 8 || !number.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    
+    let sum = calculate_sum(number);
+    
+    // 標準規則：總和能被5整除則為合法（更新後的規則）
+    if sum % 5 == 0 {
         return true;
     }
     
@@ -76,17 +84,18 @@ mod tests {
     
     #[test]
     fn test_valid_numbers() {
-        // 一些有效的統一編號範例（實際有效）
-        assert!(is_valid_uniform_number("04595257"));  // 可被10整除
-        assert!(is_valid_uniform_number("10458575"));  // 可被10整除
+        // 一些有效的統一編號範例
+        assert!(is_valid_uniform_number("04595257"));  // 可被5整除
+        assert!(is_valid_uniform_number("10458575"));  // 可被5整除
         assert!(is_valid_uniform_number("16886777"));  // 特殊規則：餘7且第7碼為7
+        assert!(is_valid_uniform_number("12345155"));  // 可被5整除但不能被10整除 (sum=25)
     }
     
     #[test]
     fn test_invalid_numbers() {
         // 無效的統一編號
-        assert!(!is_valid_uniform_number("12345678"));
-        assert!(!is_valid_uniform_number("11111111"));  // 總和不能被10整除也不符合餘7規則
+        assert!(!is_valid_uniform_number("12345678"));  // 不能被5整除 (總和 = 36, 餘1)
+        assert!(!is_valid_uniform_number("11111111"));  // 總和不能被5整除也不符合餘7規則 (總和 = 16, 餘1)
     }
     
     #[test]
